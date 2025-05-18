@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiClock, FiCheck, FiX, FiAward, FiTrendingUp, FiHeart, FiRotateCcw, FiVolume2, FiBarChart2 } from 'react-icons/fi';
 import { useApp } from '@/lib/contexts/AppContext';
 import Button from '@/components/ui/Button';
-import { Flashcard } from '@/lib/types';
-import { difficultyToQuality } from '@/lib/utils';
 import styles from './FlashcardReview.module.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -32,10 +30,8 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
   const [showAnimation, setShowAnimation] = useState(false);
   const [isReading, setIsReading] = useState(false);
   
-  // Filter flashcards for the current deck
   const deckFlashcards = flashcards.filter(card => card.deckId === deckId);
   
-  // Initialize review session
   useEffect(() => {
     if (deckFlashcards.length > 0) {
       const id = startReview(deckId);
@@ -51,76 +47,50 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
     };
   }, [deckId, deckFlashcards.length, startReview, endReview]);
   
-  // Check if review is complete
   const isReviewComplete = currentIndex >= deckFlashcards.length;
-  
-  // Current card
   const currentCard = isReviewComplete ? null : deckFlashcards[currentIndex];
   
-  // Handle card flip
   const handleFlip = () => {
     setIsRevealed(!isRevealed);
   };
   
-  // Handle read aloud
   const handleReadAloud = () => {
     if (!currentCard) return;
     
-    // Stop any ongoing speech
     window.speechSynthesis.cancel();
     
-    // Create utterance with card text
     const utterance = new SpeechSynthesisUtterance(
       isRevealed ? currentCard.answer : currentCard.question
     );
     
-    // Set speaking state
     setIsReading(true);
     
-    // Add event listener for when speech ends
     utterance.onend = () => {
       setIsReading(false);
     };
     
-    // Speak the text
     window.speechSynthesis.speak(utterance);
   };
   
-  // Stop reading aloud
   const stopReadAloud = () => {
     window.speechSynthesis.cancel();
     setIsReading(false);
   };
   
-  // Handle difficulty rating
   const handleDifficultyRating = (difficulty: 'easy' | 'medium' | 'hard') => {
     if (!currentCard || !sessionId || !cardStartTime) return;
     
-    // Calculate time spent on card
     const timeSpent = new Date().getTime() - cardStartTime.getTime();
+    const isCorrect = difficulty !== 'hard';
     
-    // Record the review
-    const isCorrect = difficulty !== 'hard'; // Simplistic approach for demo
-    
-    // Log for debugging
-    console.log('Recording review:', {
-      sessionId,
-      flashcardId: currentCard.id,
-      isCorrect,
-      difficulty,
-      timeSpent
-    });
-    
-    // Record the review in the context
     recordReview(sessionId, currentCard.id, isCorrect, difficulty, timeSpent);
     
-    // Update points based on difficulty and correctness
     let pointsToAdd = 0;
     
     switch (difficulty) {
       case 'easy':
         pointsToAdd = 10;
-        if (streak >= 3) pointsToAdd += 5; // Streak bonus
+        if (streak >= 3) pointsToAdd += 5;
         break;
       case 'medium':
         pointsToAdd = 5;
@@ -130,7 +100,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
         break;
     }
     
-    // Update streak
     if (isCorrect) {
       setStreak(prev => prev + 1);
       setFeedback(getPositiveFeedback(streak));
@@ -139,20 +108,12 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
       setFeedback("Keep practicing! You'll get it next time.");
     }
     
-    // Add points
     setPoints(prev => prev + pointsToAdd);
-    
-    // Show animation
     setShowAnimation(true);
     setTimeout(() => setShowAnimation(false), 1000);
-    
-    // Add to reviewed cards
     setReviewedCards(prev => [...prev, currentCard.id]);
-    
-    // Stop any ongoing speech
     stopReadAloud();
     
-    // Move to next card
     setTimeout(() => {
       setIsRevealed(false);
       setCurrentIndex(prev => prev + 1);
@@ -160,7 +121,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
     }, 1000);
   };
   
-  // Get positive feedback based on streak
   const getPositiveFeedback = (currentStreak: number): string => {
     const feedbackOptions = [
       "Good job!",
@@ -176,12 +136,10 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
     return feedbackOptions[index];
   };
   
-  // Calculate progress percentage
   const progressPercentage = deckFlashcards.length > 0
     ? (reviewedCards.length / deckFlashcards.length) * 100
     : 0;
   
-  // Handle completion
   useEffect(() => {
     if (isReviewComplete && onComplete) {
       onComplete();
@@ -264,7 +222,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
   
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Progress and Stats Bar */}
       <div className={styles.statsContainer}>
         <div className="text-sm font-medium text-gray-500">
           Card {currentIndex + 1} of {deckFlashcards.length}
@@ -281,7 +238,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
         </div>
       </div>
       
-      {/* Progress Bar */}
       <div className={styles.progressBar}>
         <div 
           className={styles.progressFill}
@@ -289,7 +245,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
         ></div>
       </div>
       
-      {/* Flashcard */}
       <div className="relative">
         <AnimatePresence mode="wait">
           {currentCard && (
@@ -307,7 +262,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
                 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Front side (Question) */}
                 {!isRevealed && (
                   <motion.div 
                     className={styles.cardFace}
@@ -322,7 +276,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
                   </motion.div>
                 )}
                 
-                {/* Back side (Answer) */}
                 {isRevealed && (
                   <motion.div 
                     className={styles.cardFace}
@@ -360,7 +313,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
           )}
         </AnimatePresence>
         
-        {/* Feedback Animation */}
         <AnimatePresence>
           {showAnimation && feedback && (
             <motion.div
@@ -375,7 +327,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
         </AnimatePresence>
       </div>
       
-      {/* Difficulty Buttons */}
       <div className={styles.difficultyButtons}>
         <button
           className={styles.hardButton}
@@ -397,7 +348,6 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
         </button>
       </div>
       
-      {/* Timer */}
       <div className={styles.timer}>
         <FiClock className="mr-2" />
         <span>Time spent on this card: </span>
@@ -407,17 +357,14 @@ const FlashcardReview: React.FC<FlashcardReviewProps> = ({ deckId, onComplete })
   );
 };
 
-// Timer component
 const Timer: React.FC<{ startTime: Date | null }> = ({ startTime }) => {
   const [time, setTime] = useState(0);
   
   useEffect(() => {
     if (!startTime) return;
     
-    // Set initial time
     setTime(Math.floor((new Date().getTime() - startTime.getTime()) / 1000));
     
-    // Update time every second
     const interval = setInterval(() => {
       setTime(Math.floor((new Date().getTime() - startTime.getTime()) / 1000));
     }, 1000);
@@ -425,7 +372,6 @@ const Timer: React.FC<{ startTime: Date | null }> = ({ startTime }) => {
     return () => clearInterval(interval);
   }, [startTime]);
   
-  // Format seconds to mm:ss
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;

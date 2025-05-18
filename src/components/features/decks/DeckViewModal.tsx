@@ -23,14 +23,11 @@ const DeckViewModal: React.FC<DeckViewModalProps> = ({ isOpen, onClose, deck }) 
   const [currentPage, setCurrentPage] = useState(1);
   const [cardsPerPage] = useState(6);
   
-  // Determine if this is a community deck (not owned by current user)
   const isCommunityDeck = deck.authorId !== user?.id;
   
   useEffect(() => {
-    // Get cards for this deck
     const deckFlashcards = flashcards.filter(card => card.deckId === deck.id);
     
-    // If no cards found, generate dummy cards to match the deck's card count
     if (deckFlashcards.length === 0 && deck.cardsCount > 0) {
       const dummyCards = Array.from({ length: deck.cardsCount }, (_, i) => ({
         id: `dummy-${deck.id}-${i}`,
@@ -46,7 +43,6 @@ const DeckViewModal: React.FC<DeckViewModalProps> = ({ isOpen, onClose, deck }) 
     }
   }, [deck.id, deck.cardsCount, deck.name, flashcards]);
   
-  // Filter cards based on search query
   const filteredCards = searchQuery
     ? deckCards.filter(
         card =>
@@ -55,22 +51,18 @@ const DeckViewModal: React.FC<DeckViewModalProps> = ({ isOpen, onClose, deck }) 
       )
     : deckCards;
   
-  // Pagination
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
   const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
   const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
   
-  // Handle page change
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
   
-  // Handle fork/clone deck
   const handleForkDeck = () => {
     const newDeckId = importDeck(deck);
     onClose();
-    // Show success message (in a real app, use a proper toast notification)
     alert(`Deck "${deck.name}" has been forked to your collection!`);
   };
   

@@ -25,17 +25,17 @@ interface AppContextType {
   
   // Reviews
   reviewSessions: ReviewSession[];
-  startReview: (deckId: string) => string; // Returns session ID
+  startReview: (deckId: string) => string; 
   endReview: (sessionId: string) => void;
   recordReview: (sessionId: string, flashcardId: string, isCorrect: boolean, difficulty: 'easy' | 'medium' | 'hard', timeSpent: number) => void;
   
   // Marketplace
   communityDecks: Deck[];
-  importDeck: (deck: Deck) => string; // Returns the new deck ID
-  publishDeck: (deckId: string) => void; // Makes deck public in marketplace
-  unpublishDeck: (deckId: string) => void; // Removes deck from marketplace
-  incrementDeckViews: (deckId: string) => void; // Increment view count of a deck
-  isForked: (originalDeckId: string) => boolean; // Check if deck has been forked by user
+  importDeck: (deck: Deck) => string; 
+  publishDeck: (deckId: string) => void; 
+  unpublishDeck: (deckId: string) => void; 
+  incrementDeckViews: (deckId: string) => void; 
+  isForked: (originalDeckId: string) => boolean; 
   
   // Google Sheets Import
   importFromGoogleSheets: (sheetUrl: string, deckId: string, columnMapping: Record<string, string>) => Promise<void>;
@@ -81,7 +81,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setFlashcards(flashcards.filter(card => card.deckId !== id));
   };
   
-  // Flashcard operations
   const createFlashcard = (flashcard: Omit<Flashcard, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newFlashcard: Flashcard = {
       ...flashcard,
@@ -92,7 +91,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     setFlashcards([...flashcards, newFlashcard]);
     
-    // Update deck card count
     const deck = decks.find(d => d.id === flashcard.deckId);
     if (deck) {
       updateDeck(deck.id, { cardsCount: deck.cardsCount + 1 });
@@ -120,7 +118,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
   
-  // Review operations
   const startReview = (deckId: string): string => {
     const sessionId = `session-${reviewSessions.length + 1}`;
     const newSession: ReviewSession = {
@@ -132,7 +129,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       reviews: [],
     };
     
-    // Set deck review status to incomplete when starting a review
     const deck = decks.find(d => d.id === deckId);
     if (deck) {
       updateDeck(deckId, { reviewStatus: 'incomplete' });
@@ -156,7 +152,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       s.id === sessionId ? updatedSession : s
     ));
     
-    // Check if all cards in the deck were reviewed
     const deck = decks.find(d => d.id === session.deckId);
     if (deck) {
       const deckFlashcards = flashcards.filter(card => card.deckId === deck.id);
@@ -175,7 +170,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const session = reviewSessions.find(s => s.id === sessionId);
     if (!session) return;
     
-    // Create a new review object
     const newReview = {
       id: `review-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Ensure unique ID
       flashcardId,
@@ -186,7 +180,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: new Date(),
     };
     
-    // Update session with deep clone to ensure reference changes
     const updatedSession = {
       ...session,
       cardsReviewed: session.cardsReviewed + 1,
@@ -194,24 +187,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       reviews: [...session.reviews, newReview]
     };
     
-    // Create a completely new array to ensure reference change triggers re-renders
     const updatedSessions = reviewSessions.map(s => 
       s.id === sessionId ? updatedSession : s
     );
     
-    // Update state with the new array
     setReviewSessions([...updatedSessions]);
     
-    // Log for debugging
-    console.log('Review recorded:', newReview);
-    console.log('Updated session:', updatedSession);
-    console.log('All sessions:', updatedSessions);
-    
-    // Update flashcard
     updateFlashcard(flashcardId, {
       lastReviewed: new Date(),
       difficulty,
-      // In a real app, we would calculate the next review date based on the SM-2 algorithm
       nextReviewDate: new Date(new Date().setDate(new Date().getDate() + 3)),
     });
   };
@@ -229,7 +213,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       createdAt: new Date(),
       updatedAt: new Date(),
       isPublic: false, // Set to private by default when forking
-      dueCardsCount: deck.cardsCount, // All cards will be due for review
+      dueCardsCount: deck.cardsCount, 
       originalDeckId: deck.id, // Store the ID of the original deck that was forked
     };
     
@@ -244,8 +228,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (communityDeckCards.length > 0) {
       sourceCards = communityDeckCards;
     } else {
-      // We don't have the cards for this deck yet, so we'll create some placeholder cards
-      // In a real app, you would fetch the cards from an API
       sourceCards = Array.from({ length: deck.cardsCount }, (_, i) => ({
         id: `placeholder-${i}`,
         question: `Card ${i + 1} Question`,
@@ -256,25 +238,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }));
     }
     
-    // Clone each card with the new deck ID
     const newCards = sourceCards.map(card => ({
       ...card,
       id: `card-${flashcards.length + Math.floor(Math.random() * 1000) + 1 + Math.floor(Math.random() * 1000)}`,
       deckId: newDeckId,
       createdAt: new Date(),
       updatedAt: new Date(),
-      lastReviewed: undefined, // Reset review history
+      lastReviewed: undefined, 
       nextReviewDate: undefined,
       difficulty: undefined,
       repetitions: 0,
       interval: 0,
-      efactor: 2.5, // Default value for SM-2 algorithm
+      efactor: 2.5, 
     }));
     
     // Add the new cards to the flashcards state
     setFlashcards([...flashcards, ...newCards]);
-    
-    console.log(`Imported deck ${deck.name} with ${newCards.length} cards`);
     
     // Return the new deck ID
     return newDeckId;
@@ -350,11 +329,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     deckId: string,
     columnMapping: Record<string, string>
   ): Promise<void> => {
-    // In a real app, this would call an API to import from Google Sheets
-    // For this demo, we'll simulate it with a timeout
     return new Promise(resolve => {
       setTimeout(() => {
-        // Create some dummy flashcards
         const newCards: Flashcard[] = [
           {
             id: `card-${flashcards.length + 1}`,

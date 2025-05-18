@@ -32,7 +32,6 @@ export default function DecksPage() {
   const [sortBy, setSortBy] = useState<string>('updatedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
-  // Get unique categories from decks
   const categories = useMemo(() => {
     const uniqueCategories = new Set<string>();
     decks.forEach(deck => {
@@ -43,7 +42,6 @@ export default function DecksPage() {
     return Array.from(uniqueCategories).sort();
   }, [decks]);
 
-  // Filter and sort decks
   const filteredDecks = useMemo(() => {
     return decks
       .filter(deck => 
@@ -57,7 +55,6 @@ export default function DecksPage() {
         (statusFilter ? deck.reviewStatus === statusFilter : true)
       )
       .sort((a, b) => {
-        // Sort by selected field
         let valueA, valueB;
         
         if (sortBy === 'name') {
@@ -70,12 +67,10 @@ export default function DecksPage() {
           valueA = new Date(a.createdAt).getTime();
           valueB = new Date(b.createdAt).getTime();
         } else {
-          // Default: updatedAt
           valueA = new Date(a.updatedAt).getTime();
           valueB = new Date(b.updatedAt).getTime();
         }
         
-        // Apply sort order
         if (sortOrder === 'asc') {
           return valueA > valueB ? 1 : -1;
         } else {
@@ -84,23 +79,19 @@ export default function DecksPage() {
       });
   }, [decks, searchQuery, categoryFilter, statusFilter, sortBy, sortOrder]);
   
-  // Paginate decks
   const paginatedDecks = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredDecks.slice(startIndex, endIndex);
   }, [filteredDecks, currentPage, itemsPerPage]);
   
-  // Calculate total pages
   const totalPages = Math.ceil(filteredDecks.length / itemsPerPage);
   
-  // Handle opening the view deck modal
   const handleViewDeck = (deck: Deck) => {
     setViewDeck(deck);
     setIsViewModalOpen(true);
   };
   
-  // Handle toggling deck privacy
   const handleTogglePrivacy = (deck: Deck) => {
     if (deck.isPublic) {
       updateDeck(deck.id, { isPublic: false });
@@ -111,12 +102,10 @@ export default function DecksPage() {
     }
   };
 
-  // Function to toggle menu for a deck
   const toggleMenu = (deckId: string) => {
     setOpenMenuDeckId(openMenuDeckId === deckId ? null : deckId);
   };
 
-  // Reset filters
   const resetFilters = () => {
     setCategoryFilter('');
     setStatusFilter('');

@@ -1,6 +1,3 @@
-// Types for the application
-
-// Flashcard type
 export interface Flashcard {
   id: string;
   question: string;
@@ -9,9 +6,9 @@ export interface Flashcard {
   lastReviewed?: Date;
   nextReviewDate?: Date;
   difficulty?: 'easy' | 'medium' | 'hard';
-  repetitions?: number; // Number of times card has been reviewed
-  interval?: number; // Current interval in days
-  efactor?: number; // E-Factor (ease factor) from SM-2 algorithm
+  repetitions?: number;
+  interval?: number;
+  efactor?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,7 +30,7 @@ export interface Deck {
   createdAt: Date;
   updatedAt: Date;
   viewCount?: number;
-  originalDeckId?: string; // ID of the original deck if this is a fork
+  originalDeckId?: string;
 }
 
 // Review session type
@@ -54,7 +51,7 @@ export interface ReviewResult {
   sessionId: string;
   difficulty: 'easy' | 'medium' | 'hard';
   isCorrect: boolean;
-  timeSpent: number; // in milliseconds
+  timeSpent: number;
   date: Date;
 }
 

@@ -7,7 +7,6 @@ import { useApp } from '@/lib/contexts/AppContext';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { DeckViewModal } from '@/components/features/decks';
-import { formatDate } from '@/lib/utils';
 import { Deck } from '@/lib/types';
 
 export default function MarketplacePage() {
@@ -19,14 +18,12 @@ export default function MarketplacePage() {
   const [isForkModalOpen, setIsForkModalOpen] = useState(false);
   const [deckToFork, setDeckToFork] = useState<Deck | null>(null);
   
-  // Filter states
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('rating');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  // Get unique categories from decks
   const categories = useMemo(() => {
     const uniqueCategories = new Set<string>();
     communityDecks.forEach(deck => {
@@ -37,13 +34,10 @@ export default function MarketplacePage() {
     return Array.from(uniqueCategories).sort();
   }, [communityDecks]);
 
-  // Get unique authors from decks
   const authors = useMemo(() => {
     const uniqueAuthors = new Map<string, { id: string; name: string }>();
     communityDecks.forEach(deck => {
       if (deck.authorId && !uniqueAuthors.has(deck.authorId)) {
-        // In a real app, you would fetch author details from a database
-        // For this demo, we'll use mock author names
         uniqueAuthors.set(deck.authorId, {
           id: deck.authorId,
           name: deck.authorId === 'user-1' ? 'John Doe' : 
@@ -56,21 +50,16 @@ export default function MarketplacePage() {
     return Array.from(uniqueAuthors.values());
   }, [communityDecks]);
 
-  // Filter and sort decks
   const filteredDecks = useMemo(() => {
     return communityDecks
       .filter(deck => 
-        // Only show public decks in marketplace
         deck.isPublic &&
-        // Search query filter
         (deck.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (deck.description && deck.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (deck.category && deck.category.toLowerCase().includes(searchQuery.toLowerCase()))) &&
-        // Category filter
         (categoryFilter ? deck.category === categoryFilter : true)
       )
       .sort((a, b) => {
-        // Sort by selected field
         let valueA, valueB;
         
         if (sortBy === 'name') {
@@ -86,12 +75,10 @@ export default function MarketplacePage() {
           valueA = a.rating || 0;
           valueB = b.rating || 0;
         } else {
-          // Default: updatedAt
           valueA = new Date(a.updatedAt).getTime();
           valueB = new Date(b.updatedAt).getTime();
         }
         
-        // Apply sort order
         if (sortOrder === 'asc') {
           return valueA > valueB ? 1 : -1;
         } else {
@@ -100,48 +87,40 @@ export default function MarketplacePage() {
       });
   }, [communityDecks, searchQuery, categoryFilter, sortBy, sortOrder]);
   
-  // Paginate decks
   const paginatedDecks = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredDecks.slice(startIndex, endIndex);
   }, [filteredDecks, currentPage, itemsPerPage]);
   
-  // Calculate total pages
   const totalPages = Math.ceil(filteredDecks.length / itemsPerPage);
   
-  // Handle opening the view deck modal
   const handleViewDeck = (deck: Deck) => {
     setViewDeck(deck);
     setIsViewModalOpen(true);
-    // Increment view count when opening deck
     incrementDeckViews(deck.id);
   };
   
-  // Handle showing fork confirmation
   const handleShowForkConfirmation = (deck: Deck) => {
     setDeckToFork(deck);
     setIsForkModalOpen(true);
   };
-  
-  // Handle forking/importing a deck
+
   const handleForkDeck = () => {
     if (!deckToFork) return;
     
-    // Create a copy of the deck for the user
     const forkedDeck: Deck = {
       ...deckToFork,
       id: `fork-${deckToFork.id}`,
       name: `Fork of ${deckToFork.name}`,
-      isPublic: false, // Set to private by default
-      authorId: user?.id, // Change author to current user
+      isPublic: false,
+      authorId: user?.id,
     };
     
     importDeck(forkedDeck);
     setIsForkModalOpen(false);
   };
 
-  // Reset filters
   const resetFilters = () => {
     setCategoryFilter('');
     setSortBy('rating');

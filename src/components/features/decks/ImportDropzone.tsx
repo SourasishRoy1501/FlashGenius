@@ -69,8 +69,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
     });
 
     try {
-      console.log("Processing file:", file.name, file.type);
-      
       // Check file type
       const validTypes = [
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
@@ -92,7 +90,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
 
       // Read file
       const data = await readFileAsync(file);
-      console.log("File data loaded");
       
       // Parse data based on file type
       let parsedData;
@@ -101,8 +98,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
       } else {
         parsedData = parseExcel(data as ArrayBuffer);
       }
-
-      console.log("Parsed data:", parsedData.length, "rows");
 
       // Validate data structure
       if (!parsedData || parsedData.length === 0) {
@@ -118,7 +113,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
         throw new Error('File must contain "question" and "answer" columns.');
       }
       setIsProcessing(false);
-      // Update state to move to naming deck
       setProcessingState({
         file,
         parsedData,
@@ -127,7 +121,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
       });
       
     } catch (err) {
-      console.error("Import error:", err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
       setIsProcessing(false);
       setIsDragging(false);
@@ -140,13 +133,11 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
     }
   }, []);
 
-  // Step 2: Create the deck (triggered by state change)
   useEffect(() => {
     if (processingState.step === 'creatingDeck' && processingState.deckName && processingState.parsedData) {
       const createDeckAndCards = async () => {
         try {
           const { deckName, parsedData, file } = processingState;
-          
           // Ensure all values are non-null before proceeding
           if (!deckName || !parsedData || !file) {
             throw new Error('Missing data for deck creation');
@@ -163,19 +154,14 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
             tags: []
           };
 
-          console.log("Creating deck:", newDeck);
-          
-          // Create the deck
           createDeck(newDeck);
           
-          // Move to the next step - the deck list effect will trigger card creation
           setProcessingState(prev => ({
             ...prev,
             step: 'creatingCards'
           }));
           
         } catch (err) {
-          console.error("Error creating deck:", err);
           setError(err instanceof Error ? err.message : 'Failed to create deck');
           setIsProcessing(false);
           setIsDragging(false);
@@ -200,7 +186,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
       return;
     }
     
-    // Update state to move to creating deck
     setProcessingState(prev => ({
       ...prev,
       deckName: customDeckName.trim(),
@@ -208,7 +193,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
     }));
   };
 
-  // Step 3: Monitor decks list changes and create cards when deck is available
   useEffect(() => {
     if (processingState.step !== 'creatingCards' || !processingState.deckName || !processingState.parsedData || !processingState.file) {
       return;
@@ -216,17 +200,12 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
 
     const createCards = async () => {
       try {
-        // Find the created deck by name
         const createdDeck = decks.find(d => d.name === processingState.deckName);
         
         if (!createdDeck) {
-          console.log("Deck not found yet, waiting...");
-          return; // Wait for next decks update
+          return;
         }
         
-        console.log("Found created deck with ID:", createdDeck.id);
-        
-        // Create flashcards
         let cardCount = 0;
         const parsedData = processingState.parsedData as Array<Record<string, string>>;
         
@@ -235,7 +214,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
           const answer = row.answer || row.Answer;
           
           if (question && answer) {
-            // Create the flashcard
             await createFlashcard({
               question,
               answer,
@@ -244,22 +222,17 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
             });
             cardCount++;
             
-            // Add a small delay every 10 cards to prevent overwhelming the state updates
             if (cardCount % 10 === 0) {
               await new Promise(resolve => setTimeout(resolve, 50));
             }
           }
         }
 
-        console.log(`Created ${cardCount} flashcards`);
-
-        // Show success message
         setSuccess({
           deckName: createdDeck.name,
           cardCount: cardCount
         });
         
-        // Complete the process
         setProcessingState({
           file: null,
           parsedData: null,
@@ -270,7 +243,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
         setIsProcessing(false);
         
       } catch (err) {
-        console.error("Error creating flashcards:", err);
         setError(err instanceof Error ? err.message : 'Failed to create flashcards');
         setIsProcessing(false);
         setIsDragging(false);
@@ -285,7 +257,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
     
     createCards();
     
-    // Set a timeout to show an error if it takes too long
     const timeoutId = setTimeout(() => {
       if (processingState.step === 'creatingCards') {
         setError('Import is taking too long. Please try again with a smaller file.');
@@ -298,7 +269,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
           step: 'idle'
         });
       }
-    }, 30000); // 30 seconds timeout
+    }, 30000);
     
     return () => clearTimeout(timeoutId);
   }, [decks, processingState.step, processingState.deckName, processingState.parsedData, processingState.file, createFlashcard]);
@@ -315,7 +286,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
   }, [parseFile]);
 
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("File input change event", e.target.files);
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       parseFile(file);
@@ -323,7 +293,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
   }, [parseFile]);
 
   const handleButtonClick = useCallback(() => {
-    console.log("Select file button clicked");
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -351,7 +320,6 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({ isOpen, onClose }) => {
       };
       
       reader.onerror = (e) => {
-        console.error("FileReader error:", e);
         reject(new Error('Failed to read file'));
       };
       

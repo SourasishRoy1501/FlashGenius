@@ -17,29 +17,24 @@ interface UserDeckViewModalProps {
 const UserDeckViewModal: React.FC<UserDeckViewModalProps> = ({ isOpen, onClose, deck }) => {
   const { flashcards, createFlashcard, updateFlashcard, deleteFlashcard } = useApp();
   
-  // State for UI controls
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showStats, setShowStats] = useState(false);
   
-  // State for form values
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   const [editQuestion, setEditQuestion] = useState('');
   const [editAnswer, setEditAnswer] = useState('');
   
-  // Filter flashcards for this deck
   const deckFlashcards = flashcards.filter(card => card.deckId === deck.id);
   
-  // Filter flashcards based on search query
   const filteredFlashcards = deckFlashcards.filter(card => 
     card.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     card.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Calculate review statistics
   const calculateReviewStats = () => {
     const totalCards = deckFlashcards.length;
     if (totalCards === 0) return { easy: 0, medium: 0, hard: 0, mastery: 0 };
@@ -57,10 +52,8 @@ const UserDeckViewModal: React.FC<UserDeckViewModalProps> = ({ isOpen, onClose, 
       if (card.difficulty) {
         difficultyCount[card.difficulty]++;
         
-        // Add points based on difficulty
         if (card.difficulty === 'easy') totalPoints += 10;
         else if (card.difficulty === 'medium') totalPoints += 5;
-        // hard cards get 0 points
       }
     });
     
@@ -76,7 +69,6 @@ const UserDeckViewModal: React.FC<UserDeckViewModalProps> = ({ isOpen, onClose, 
   
   const reviewStats = calculateReviewStats();
   
-  // Handle adding a new card
   const handleAddCard = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -87,21 +79,18 @@ const UserDeckViewModal: React.FC<UserDeckViewModalProps> = ({ isOpen, onClose, 
       answer: newAnswer,
       deckId: deck.id,
     });
-    
-    // Reset form
+
     setNewQuestion('');
     setNewAnswer('');
     setIsAddingCard(false);
   };
   
-  // Start editing a card
   const handleStartEdit = (card: Flashcard) => {
     setEditingCardId(card.id);
     setEditQuestion(card.question);
     setEditAnswer(card.answer);
   };
   
-  // Save edited card
   const handleSaveEdit = (cardId: string) => {
     if (!editQuestion.trim() || !editAnswer.trim()) return;
     
