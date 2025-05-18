@@ -15,44 +15,37 @@ interface CreateDeckModalProps {
 const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose }) => {
   const { createDeck, createFlashcard } = useApp();
   
-  // Deck form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [tags, setTags] = useState('');
   
-  // Cards state
   const [cards, setCards] = useState<Array<{ question: string; answer: string }>>([
     { question: '', answer: '' }
   ]);
   
-  // Add a new card input
   const addCard = () => {
     setCards([...cards, { question: '', answer: '' }]);
   };
   
-  // Update card at index
   const updateCard = (index: number, field: 'question' | 'answer', value: string) => {
     const updatedCards = [...cards];
     updatedCards[index][field] = value;
     setCards(updatedCards);
   };
   
-  // Remove card at index
   const removeCard = (index: number) => {
-    if (cards.length === 1) return; // Keep at least one card
+    if (cards.length === 1) return;
     const updatedCards = cards.filter((_, i) => i !== index);
     setCards(updatedCards);
   };
   
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim()) return;
     
-    // Create the deck
     const newDeck = {
       name,
       description,
@@ -66,11 +59,8 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose }) =>
     
     createDeck(newDeck);
     
-    // Get the new deck ID (in a real app, this would be returned from createDeck)
-    // For this demo, we'll assume it's the last deck in the array
     const deckId = `deck-${new Date().getTime()}`;
     
-    // Create all the cards
     const validCards = cards.filter(card => card.question.trim() && card.answer.trim());
     
     validCards.forEach(card => {
@@ -81,12 +71,10 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose }) =>
       });
     });
     
-    // Reset form and close modal
     resetForm();
     onClose();
   };
   
-  // Reset form
   const resetForm = () => {
     setName('');
     setDescription('');

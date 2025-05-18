@@ -17,12 +17,10 @@ export default function ReviewPage() {
   const deck = decks.find(d => d.id === deckId);
   
   const handleComplete = () => {
-    // Update deck review status to complete when all cards are reviewed
     if (deck) {
       updateDeck(deckId, { reviewStatus: 'complete' });
     }
     
-    // Navigate back to decks page after a short delay
     setTimeout(() => {
       router.push('/decks');
     }, 2000);

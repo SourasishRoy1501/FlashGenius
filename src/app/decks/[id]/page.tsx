@@ -24,7 +24,6 @@ export default function DeckDetailsPage() {
   const deck = decks.find(d => d.id === deckId);
   const deckFlashcards = flashcards.filter(card => card.deckId === deckId);
   
-  // Filter flashcards based on search query
   const filteredFlashcards = deckFlashcards.filter(card => 
     card.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
     card.answer.toLowerCase().includes(searchQuery.toLowerCase())
