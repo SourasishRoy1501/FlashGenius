@@ -1,0 +1,197 @@
+.flashcardContainer {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  margin: 2rem 0;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.cardFace {
+  flex-direction: column;
+  width: 100%;
+  display: flex;
+  flex-grow: 1;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.questionTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  color: #1f2937;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 1rem;
+}
+
+.questionContent {
+  font-size: 1.5rem;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+  z-index: 10;
+  gap: 1rem;
+}
+
+.difficultyButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.hardButton {
+  background-color: #ef4444;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  border: none;
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hardButton:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(239, 68, 68, 0.3);
+}
+
+.mediumButton {
+  background-color: #a855f7;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  border: none;
+  box-shadow: 0 4px 6px rgba(168, 85, 247, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mediumButton:hover {
+  background-color: #9333ea;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(168, 85, 247, 0.3);
+}
+
+.easyButton {
+  background-color: #22c55e;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  border: none;
+  box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.easyButton:hover {
+  background-color: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(34, 197, 94, 0.3);
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 1rem;
+  background-color: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.progressContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transition: width 0.5s ease;
+  border-radius: 9999px;
+}
+
+.statsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+}
+
+.feedbackAnimation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+} 
